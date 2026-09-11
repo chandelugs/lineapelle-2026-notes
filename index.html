@@ -169,7 +169,7 @@ var EX = RAW.map(function(s){var p=s.split("|");
 var LS = {get:function(k,d){try{var v=localStorage.getItem(k);return v===null?d:JSON.parse(v);}catch(e){return d}},
           set:function(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}};
 EX = EX.concat(LS.get("customEx",[]));
-var notes = [];                 // server rows {timestamp,exhibitorid,exhibitor,author,note,done}
+var notes = LS.get("notesCache",[]);   // last-known server rows, shown instantly; refreshed by load()
 var queue = LS.get("queue",[]); // pending saves
 var who = LS.get("who","");
 var day = LS.get("day",1);
@@ -278,8 +278,8 @@ setInterval(flush,20000);
 function load(silent){
   if(!API_URL){netTxt("No API_URL configured — saves stay on this phone",true);return;}
   if(!silent) netTxt("Loading notes…");
-  fetch(API_URL).then(function(r){return r.json()}).then(function(d){
-    notes=d.boothnotes||[];
+  fetch(API_URL+(API_URL.indexOf("?")>=0?"&":"?")+"scope=notes",{cache:"no-store"}).then(function(r){return r.json()}).then(function(d){
+    notes=d.boothnotes||[]; LS.set("notesCache",notes);
     var fmap={}; (d.exhibitors||[]).forEach(function(r){fmap[r.exhibitorid]=r;});
     EX.forEach(function(e){var r=fmap[e.id]; if(r){ if(String(r.focus||"").trim()!=="") e.focus=r.focus;
       if(String(r.name||"").trim()!=="") e.name=r.name; }});

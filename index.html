@@ -75,7 +75,7 @@
 </head>
 <body>
 <header>
-  <div class="mast"><h1>Lineapelle — booth notes</h1><button class="who" id="whoBtn">…</button></div>
+  <div class="mast"><h1>Lineapelle — booth notes</h1><span style="display:flex;gap:6px"><button class="who" id="refreshBtn" title="Refresh notes">&#x21bb;</button><button class="who" id="whoBtn">…</button></span></div>
   <p class="net" id="net"><span class="dot"></span><span id="netTxt">checking…</span></p>
   <input class="search" id="q" type="search" placeholder="Search exhibitor or booth…">
   <div class="tabs">
@@ -275,9 +275,9 @@ window.addEventListener("online",flush);
 setInterval(flush,20000);
 
 /* ---------- load ---------- */
-function load(){
+function load(silent){
   if(!API_URL){netTxt("No API_URL configured — saves stay on this phone",true);return;}
-  netTxt("Loading notes…");
+  if(!silent) netTxt("Loading notes…");
   fetch(API_URL).then(function(r){return r.json()}).then(function(d){
     notes=d.boothnotes||[];
     var fmap={}; (d.exhibitors||[]).forEach(function(r){fmap[r.exhibitorid]=r;});
@@ -299,6 +299,9 @@ var dlg=$("#whoDlg");
 function setWho(w){who=w;LS.set("who",w);$("#whoBtn").textContent=w;}
 $("#whoBtn").addEventListener("click",function(){dlg.showModal()});
 dlg.addEventListener("click",function(ev){var b=ev.target.closest(".opt");if(b){setWho(b.dataset.w);dlg.close();render();}});
+$("#refreshBtn").addEventListener("click",function(){load();});
+document.addEventListener("visibilitychange",function(){ if(!document.hidden&&navigator.onLine) load(true); });
+setInterval(function(){ if(!document.hidden&&navigator.onLine) load(true); },60000);
 if(who){setWho(who);}else{dlg.showModal();}
 render(); load();
 })();

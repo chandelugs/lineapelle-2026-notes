@@ -182,7 +182,6 @@ function allNotes(id){return notes.concat(queue.map(function(q){q=q.p;return{tim
   .filter(function(n){return n.exhibitorid===id}).sort(function(a,b){return new Date(b.timestamp)-new Date(a.timestamp)})}
 function hasNote(id){return allNotes(id).some(function(n){return String(n.note||"").trim()!==""})}
 function isDone(id){var l=allNotes(id).filter(function(n){return String(n.done||"")!==""})[0];return l&&/^(yes|true|1)$/i.test(l.done)}
-function myLatest(id){var l=allNotes(id).filter(function(n){return n.author===who&&String(n.note||"").trim()!==""})[0];return l?l.note:""}
 
 /* ---------- render ---------- */
 function render(){
@@ -205,7 +204,7 @@ function render(){
       if(!ns.length) h+='<p class="stat">No notes yet.</p>';
       ns.forEach(function(n){h+='<div class="note-item"><div class="meta">'+esc(n.author||"?")+" · "+fmt(n.timestamp)
         +(n._pend?' · <span class="stat pend">pending</span>':"")+'</div><p>'+esc(n.note)+'</p></div>'});
-      var draft=LS.get("draft:"+e.id, myLatest(e.id));
+      var draft=LS.get("draft:"+e.id, "");
       h+='</div><textarea placeholder="Dictate or type…">'+esc(draft)+'</textarea>'
         +'<div class="btns"><button class="save">Save note</button>'
         +'<button class="donebtn'+(isDone(e.id)?" is":"")+'">'+(isDone(e.id)?"Done ✓":"Mark done")+'</button>'
@@ -217,6 +216,13 @@ function render(){
   $("#list").innerHTML=h;
 }
 var openId=null;
+function scrollToCard(id){
+  var el=document.querySelector('.ex[data-id="'+id+'"]'); if(!el) return;
+  var hdr=document.querySelector("header");
+  var y=el.getBoundingClientRect().top+window.scrollY-(hdr?hdr.offsetHeight:0)-6;
+  if(y<window.scrollY||el.getBoundingClientRect().top<((hdr?hdr.offsetHeight:0)))
+    window.scrollTo({top:Math.max(0,y),behavior:"smooth"});
+}
 
 /* ---------- events (delegated) ---------- */
 $("#list").addEventListener("click",function(ev){
@@ -224,13 +230,13 @@ $("#list").addEventListener("click",function(ev){
       add=ev.target.closest(".addrow"), row=ev.target.closest(".row");
   var card=ev.target.closest(".ex"); var id=card&&card.dataset.id;
   if(save){ send(id,card,$("textarea",card).value,""); return; }
-  if(done){ send(id,card,$("textarea",card).value,isDone(id)?"no":"yes"); return; }
+  if(done){ send(id,card,"",isDone(id)?"no":"yes"); return; }
   if(add){ var nm=prompt("Exhibitor name"); if(!nm)return;
     var bo=prompt("Booth (e.g. H13 · D12)")||"—";
     var ne={id:"new-"+Date.now(),day:day,num:"+",name:nm,booth:bo,tag:"E"};
-    EX.push(ne); LS.set("customEx",LS.get("customEx",[]).concat([ne])); openId=ne.id; render(); return; }
-  if(row){ openId = (openId===id? null : id); render();
-    if(openId){var el=document.querySelector('.ex[data-id="'+openId+'"]'); el&&el.scrollIntoView({block:"start",behavior:"smooth"});} }
+    EX.push(ne); LS.set("customEx",LS.get("customEx",[]).concat([ne])); openId=ne.id; render(); scrollToCard(ne.id); return; }
+  if(row){ var wasOpen=(openId===id); openId = (wasOpen? null : id); render();
+    if(openId) scrollToCard(openId); }
 });
 $("#list").addEventListener("input",function(ev){
   if(ev.target.tagName==="TEXTAREA"){var card=ev.target.closest(".ex");LS.set("draft:"+card.dataset.id,ev.target.value);}
@@ -239,8 +245,11 @@ $("#list").addEventListener("input",function(ev){
 /* ---------- save / queue / flush ---------- */
 function send(id,card,text,done){
   var ex=EX.filter(function(e){return e.id===id})[0]||{};
+  var isStatus=(done!=="" && text.trim()==="");
+  if(!isStatus && text.trim()==="") return;                 // nothing to save
   var p={kind:"note",id:id,exhibitor:ex.name||"",author:who,note:text.trim(),done:done,_t:new Date().toISOString()};
-  queue.push({p:p}); LS.set("queue",queue); LS.set("draft:"+id,text);
+  queue.push({p:p}); LS.set("queue",queue);
+  if(!isStatus) LS.set("draft:"+id,"");                     // clear box after save; note lives in history
   var st=card&&$("[data-stat]",card); if(st){st.className="stat pend";st.textContent="Queued…";}
   flush(); render();
 }

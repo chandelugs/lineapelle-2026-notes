@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Lineapelle 2026 — Booth Notes</title>
+<style>
+  :root{--navy:#062541;--warm:#cf7442;--ink:#14161b;--soft:#4a4f5a;--faint:#8a8f99;
+    --ground:#fbfaf7;--panel:#fff;--alt:#f1efe8;--rule:#e0ddd4;
+    --ok:#2f6b4f;--okbg:#e8f2ec;--open:#b45f28;--openbg:#fbeee4;}
+  @media (prefers-color-scheme:dark){:root{--navy:#7fb2dc;--warm:#e8975f;--ink:#e9e7e2;--soft:#a8a49c;
+    --faint:#7d7a73;--ground:#0f1114;--panel:#161920;--alt:#1d212b;--rule:#2b303b;
+    --ok:#6fc39a;--okbg:#16281f;--open:#e8975f;--openbg:#2c1f14;}}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:var(--ground);color:var(--ink);
+    font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding-bottom:40px}
+  header{position:sticky;top:0;z-index:5;background:var(--ground);border-bottom:1px solid var(--rule);padding:10px 14px 0}
+  .mast{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+  h1{font-family:Georgia,serif;font-weight:400;font-size:19px;margin:0;color:var(--navy)}
+  .who{border:1px solid var(--rule);background:var(--panel);color:var(--navy);font-weight:700;
+    font-size:12px;border-radius:14px;padding:4px 12px;cursor:pointer}
+  .net{font-size:11px;color:var(--faint);margin:2px 0 6px}
+  .net .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--ok);margin-right:4px;vertical-align:1px}
+  .net.off .dot{background:var(--open)}
+  input.search{width:100%;border:1px solid var(--rule);border-radius:8px;background:var(--panel);
+    color:var(--ink);font-size:14px;padding:8px 12px;margin:0 0 8px}
+  .tabs{display:flex;gap:6px;padding-bottom:8px}
+  .tabs button{flex:1;border:1px solid var(--rule);background:var(--panel);color:var(--soft);
+    font-weight:700;font-size:13px;padding:8px 4px;border-radius:8px;cursor:pointer}
+  .tabs button.on{background:var(--navy);border-color:var(--navy);color:#fff}
+  @media (prefers-color-scheme:dark){.tabs button.on{color:#0f1114}}
+  main{padding:10px 12px}
+  .daylab{font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:var(--faint);margin:6px 2px 8px}
+  .ex{border:1px solid var(--rule);border-radius:9px;background:var(--panel);margin-bottom:8px;overflow:hidden}
+  .ex.target{border-left:4px solid var(--warm)}
+  .row{display:flex;align-items:center;gap:9px;padding:10px 12px;cursor:pointer}
+  .num{flex:0 0 26px;height:26px;border-radius:50%;background:var(--alt);color:var(--soft);
+    font:700 12px/26px ui-monospace,monospace;text-align:center}
+  .ex.target .num{background:var(--navy);color:#fff}
+  @media (prefers-color-scheme:dark){.ex.target .num{color:#0f1114}}
+  .nm{flex:1;min-width:0}
+  .nm b{display:block;font-size:14.5px;line-height:1.25;color:var(--ink)}
+  .nm span{display:block;font-size:11.5px;color:var(--faint);line-height:1.35}
+  .flags{display:flex;gap:5px;align-items:center}
+  .pill{font-size:9.5px;font-weight:700;letter-spacing:.05em;padding:2px 6px;border-radius:3px;white-space:nowrap}
+  .pill.t{background:var(--openbg);color:var(--open)}
+  .pill.done{background:var(--okbg);color:var(--ok)}
+  .notedot{width:9px;height:9px;border-radius:50%;background:var(--ok)}
+  .body{display:none;border-top:1px solid var(--rule);padding:10px 12px 12px;background:var(--ground)}
+  .ex.openb .body{display:block}
+  .hist{margin:0 0 8px}
+  .note-item{border-left:3px solid var(--rule);padding:4px 10px;margin:0 0 7px}
+  .note-item .meta{font-size:11px;color:var(--faint);font-weight:600}
+  .note-item p{margin:1px 0 0;font-size:14px;white-space:pre-wrap}
+  textarea{width:100%;min-height:88px;border:1px solid var(--rule);border-radius:8px;background:var(--panel);
+    color:var(--ink);font:15px/1.45 inherit;padding:9px 11px;resize:vertical}
+  .btns{display:flex;gap:8px;margin-top:8px;align-items:center;flex-wrap:wrap}
+  .save{border:0;background:var(--navy);color:#fff;font-weight:700;font-size:14px;padding:9px 18px;border-radius:8px;cursor:pointer}
+  @media (prefers-color-scheme:dark){.save{color:#0f1114}}
+  .donebtn{border:1px solid var(--ok);background:none;color:var(--ok);font-weight:700;font-size:13px;padding:8px 13px;border-radius:8px;cursor:pointer}
+  .donebtn.is{background:var(--okbg)}
+  .stat{font-size:11.5px;color:var(--faint)}
+  .stat.ok{color:var(--ok);font-weight:600}
+  .stat.pend{color:var(--open);font-weight:600}
+  .addrow{width:100%;border:1px dashed var(--rule);background:none;color:var(--faint);
+    font-weight:600;font-size:13px;padding:11px;border-radius:9px;cursor:pointer;margin:2px 0 20px}
+  dialog{border:1px solid var(--rule);border-radius:12px;background:var(--panel);color:var(--ink);
+    padding:20px;max-width:300px;width:88%}
+  dialog::backdrop{background:rgba(0,0,0,.45)}
+  dialog h2{font-size:16px;margin:0 0 12px}
+  dialog button.opt{display:block;width:100%;border:1px solid var(--rule);background:var(--alt);color:var(--ink);
+    font-weight:700;font-size:15px;padding:12px;border-radius:9px;margin-bottom:8px;cursor:pointer}
+  .hidden{display:none!important}
+</style>
+</head>
+<body>
+<header>
+  <div class="mast"><h1>Lineapelle — booth notes</h1><button class="who" id="whoBtn">…</button></div>
+  <p class="net" id="net"><span class="dot"></span><span id="netTxt">checking…</span></p>
+  <input class="search" id="q" type="search" placeholder="Search exhibitor or booth…">
+  <div class="tabs">
+    <button data-day="1">Day 1 · H9</button>
+    <button data-day="2">Day 2 · H11</button>
+    <button data-day="3">Day 3 · H13+</button>
+  </div>
+</header>
+<main id="list"></main>
+<dialog id="whoDlg"><h2>Who is this phone?</h2>
+  <button class="opt" data-w="Chan">Chan</button>
+  <button class="opt" data-w="Jie Lin">Jie Lin</button>
+</dialog>
+<script>
+/* ============================================================
+   CONFIG — paste the Apps Script Web App URL (v2 backend).
+   ============================================================ */
+var API_URL = "https://script.google.com/macros/s/AKfycbwqKlWWrskMI-j27ijznPpMkdbxBkDjsDkvWYB_-VPKx885wWgH2b4zS5QQEk9ZZTAo/exec";
+
+(function(){
+"use strict";
+/* ---------- exhibitor data (id|day|num|name|booth|tag) tag: T target, S optional scout, P priority explore, E explore ---------- */
+var RAW = [
+"d1-albarello|1|1|AF di Albarello Ferdinando|C10|T|Ostrich leg + stingray; get a named contact",
+"d1-hcp|1|2|HCP — Louisiane · Cape Karoo · Tanneries du Puy|B19–C30|T|Cape Karoo slot · lizard species · du Puy epsom first contact",
+"d1-bonaudo|1|3|Bonaudo|D15–E30|E|Premium calf/kid finishes — quick qualification",
+"d1-russo|1|4|Russo di Casandrino|E13–F30|E|Glazed goatskin — chèvre alternative",
+"d1-esotica|1|5|Esotica Srl|F01–G04|S|Qualify only: ostrich leg / compliant lizard?",
+"d1-antilope|1|6|Nuova Antilope|G17–H20|E|Suede & splits — strap feasibility, MOQs",
+"d1-caravel|1|7|Caravel Pelli Pregiate|K09–L16|T|Ostrich-leg fixes · lizard MOQ 10 · collect samples",
+"d1-francecroco|1|8|France Croco|K17–L20|T|Cracking reply · Himalayan revert · yield · NET",
+"d1-puccini|1|9|Conceria Puccini Attilio|M10–M14|T|Crazy-horse-like articles; stock service?",
+"d1-novakaeru|1|10|Nova Kaeru — Exotic Leathers|N08|S|Pirarucu / beLEAF — compliant exotic alternatives",
+"d1-italven|1|11|Italven Conceria|P03–R08|T|Confirm ostrich LEG; terms + samples",
+"d1-tempesti|1|12|Tempesti|R05–S08|T|Mocha shift fix · Babele core · sub-MOQ",
+"d1-mariolevi|1|13|Mario Levi|S03–T08|E|Fine calf — quick qualification",
+"d1-mastrotto|1|14|Gruppo Mastrotto|R19–S30|E|Express ready-stock, low minimums — B2B breadth",
+"d1-overlord|1|15|Nuova Overlord|S19–T24|T|Re-establish; saffiano standard-stock colour card",
+"d1-dani|1|16|Dani|U09–V18|E|LWG eco calf — sustainability story",
+"d2-ictyos|2|1|Ictyos|A13|T|Salmon colours; continuity",
+"d2-alran|2|2|Alran|A25–A27|T|Chèvre range; readystock on tail colours",
+"d2-megisserie|2|3|Mégisserie corridor — Lauret · Richard · Alric|A29·B28·B30|E|Lamb/goat small skins — linings, soft straps",
+"d2-walpier|2|4|Conceria Walpier|B17–B19|T|Buttero first contact; terms",
+"d2-carriat|2|5|Rémy Carriat|B24|E|Bullcalf + exotic finishes; small batches",
+"d2-cdf|2|6|Cuirs du Futur|B27/C28|T|Denim dark-colour fastness · stretch status",
+"d2-italrettili|2|7|Italrettili|C01–C03|P|PRIORITY — lizard species / origin / CITES",
+"d2-labretagna|2|8|La Bretagna|C17–C21|E|Veg-tan stock colours",
+"d2-haas|2|9|Tanneries Haas|C27–D30|T|Calf 2×/yr consolidation · QC sheet · no du Puy talk",
+"d2-rinomastrotto|2|10|Rino Mastrotto|D01–E18|E|Premium calf/nappa; colour service",
+"d2-perlaazzurra|2|11|La Perla Azzurra|E01–E07|E|Veg-tan colour breadth",
+"d2-italhide|2|12|Italhide — Reptilis · White Line|E13–F16|T|Named ostrich-leg contact · Reptilis lizard species",
+"d2-bodinjoyeux|2|13|Bodin-Joyeux|E23–E25|E|Lambskin plongé feasibility",
+"d2-sciarada|2|14|Sciarada|F01–G08|E|Premium suede candidate",
+"d2-masoni|2|15|Masoni|G15–H22|E|Veg-tan volume / stock backup",
+"d2-ecopell|2|16|Ecopell 2000|G18|E|Chrome-free calf",
+"d2-ilponte|2|17|Conceria Il Ponte|H21/K22|T|Waxy-like vs our waxy; samples + terms",
+"d2-hispano|2|18|Hispano Argentina|K17/L18|E|Patent leather — niche B2B",
+"d2-badalassi|2|19|Badalassi Carlo|M23–M27|T|Pueblo direct contact + terms",
+"d2-zuma|2|20|Zuma Pelli Pregiate (MinervaHub)|N23–P30|E|Exotics second opinion (next to Europelli)",
+"d2-europelli|2|21|Europelli|N24–N26|T|Confirm ostrich LEG; Sirpelli group opener",
+"d2-vecchiatoscana|2|22|Gruppo Vecchia Toscana — Ilcea|P01–R08|T|Veg-tan cowhides; samples",
+"d2-lvmhroux|2|23|LVMH Métiers d'Art — Tanneries Roux|T01–U16|T|Ask for Roux — Naturecalf + Tissu samples",
+"d2-nutiivo|2|24|Nuti Ivo|U01–V16|E|Seasonal / effect leathers for B2B runs",
+"d2-amaltea|2|25|Amaltea — Ingropelli|U17–V22|T|Lambskin & suede feasibility",
+"d3-cfstead|3|1|CF Stead|A03–B06|T|Waxy Commander, Repello — 0.5 mm suitability",
+"d3-diasruivo|3|2|Dias Ruivo|A11|E|Suedes & effects, Portuguese pricing",
+"d3-gmelich|3|3|Gmelich + Söhne|A13–A15|E|Patent / specialty finishes",
+"d3-paccapelo|3|4|Paccapelo Divisione Pellami|B11|T|NUO wood leather — samples, workability",
+"d3-brizzi|3|5|Brizzi — Cueros Exoticos Valencia|C12|T|Ask for Cueros — exotics + cowhide consolidation",
+"d3-sirpelli|3|6|Sirpelli group stand|E01–E03|T|Group annual-volume ask (after member booths)",
+"d3-heinen|3|7|Heinen (Terracare)|E18–E20|E|Terracare eco calf",
+"d3-weinheimer|3|8|Weinheimer Leder|F08–F10|T|Calf alternatives; Sirpelli basket",
+"d3-hashimoto|3|9|Hashimoto — Shinki · Tochigi|R01–S04|T|Shinki cordovan allocation · Tochigi veg-tan",
+"d3-testing|3|10|Testing row — ICEC · CTC · SSIP|V01·Z02·V09|E|Collect lab contacts for dE/flex specs",
+"d3-cambrium|3|11|Cambrium|Z24|E|Designed-protein material — card + sample",
+"d3-kuraray|3|12|Kuraray (Clarino)|H15 · B15/C16|E|Clarino microfibre — vegan lining",
+"d3-modernmeadow|3|13|Modern Meadow|H15 · D03–E06|E|Innovera samples + MOQ reality check",
+"d3-alcantara|3|14|Alcantara|H15 · E27–F30|E|View collections only — Camari is the channel",
+"d3-coronet|3|15|Coronet|H15 · G21–H26|E|Vegan coated materials at scale",
+"d3-lignify|3|16|Lignify|H15 · K05|E|Wood/lignin leather — compare vs NUO",
+"d3-peelsphere|3|17|Peelsphere|H15 · L26|E|Algae / fruit biomaterial — novelty tier",
+"d3-nfw|3|18|NFW (Mirum)|H15 · N18|E|Mirum plant-based — strap feasibility",
+"d3-nuera|3|19|Nuera|H15 · N20|E|Next-gen alternative — qualify like NFW",
+"d3-mycolla|3|20|Mycolla|H15 · V28|E|Mycelium / collagen — card + sample",
+"d3-hardware|3|21|BuckleGuy · Ivan Leathercraft|H24 · F25/M22|T|Buckles + tools; prices, EU export terms",
+"d3-minuteria|3|22|Minuteria Metallica cluster|H22|T|Metal small-parts scout; log vendors",
+"d3-simac|3|23|Simac walk + sample pick-ups|Simac halls|T|Machinery walk · photos · then sample pick-ups"
+];
+var EX = RAW.map(function(s){var p=s.split("|");
+  return {id:p[0],day:+p[1],num:p[2],name:p[3],booth:p[4],tag:p[5],focus:p[6]||""};});
+var LS = {get:function(k,d){try{var v=localStorage.getItem(k);return v===null?d:JSON.parse(v);}catch(e){return d}},
+          set:function(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}};
+EX = EX.concat(LS.get("customEx",[]));
+var notes = [];                 // server rows {timestamp,exhibitorid,exhibitor,author,note,done}
+var queue = LS.get("queue",[]); // pending saves
+var who = LS.get("who","");
+var day = LS.get("day",1);
+
+/* ---------- helpers ---------- */
+function $(s,el){return (el||document).querySelector(s)}
+function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
+function fmt(t){var d=new Date(t);return isNaN(d)?"":d.toLocaleDateString(undefined,{day:"numeric",month:"short"})+" "+d.toLocaleTimeString(undefined,{hour:"2-digit",minute:"2-digit"})}
+function allNotes(id){return notes.concat(queue.map(function(q){q=q.p;return{timestamp:q._t,exhibitorid:q.id,author:q.author,note:q.note,done:q.done,_pend:1}}))
+  .filter(function(n){return n.exhibitorid===id}).sort(function(a,b){return new Date(b.timestamp)-new Date(a.timestamp)})}
+function hasNote(id){return allNotes(id).some(function(n){return String(n.note||"").trim()!==""})}
+function isDone(id){var l=allNotes(id).filter(function(n){return String(n.done||"")!==""})[0];return l&&/^(yes|true|1)$/i.test(l.done)}
+function myLatest(id){var l=allNotes(id).filter(function(n){return n.author===who&&String(n.note||"").trim()!==""})[0];return l?l.note:""}
+
+/* ---------- render ---------- */
+function render(){
+  document.querySelectorAll(".tabs button").forEach(function(b){b.classList.toggle("on",+b.dataset.day===day)});
+  var q=$("#q").value.trim().toLowerCase();
+  var list=EX.filter(function(e){return q? (e.name+" "+e.booth).toLowerCase().indexOf(q)>=0 : e.day===day});
+  var h=q?'<p class="daylab">Search results</p>':'<p class="daylab">Walking order — tap a row to open</p>';
+  list.forEach(function(e){
+    var open=openId===e.id, tgt=(e.tag==="T");
+    h+='<div class="ex'+(tgt?" target":"")+(open?" openb":"")+'" data-id="'+e.id+'">'
+      +'<div class="row"><span class="num">'+esc(e.num)+'</span><span class="nm"><b>'+esc(e.name)+'</b><span>'+esc(e.booth)
+      +(e.tag==="S"?" · optional scout":e.tag==="P"?" · priority":"")+'</span>'
+      +(e.focus?'<span>'+esc(e.focus)+'</span>':"")+'</span><span class="flags">'
+      +(isDone(e.id)?'<span class="pill done">DONE</span>':"")
+      +(tgt?'<span class="pill t">TARGET</span>':"")
+      +(hasNote(e.id)?'<span class="notedot"></span>':"")+'</span></div>';
+    if(open){
+      h+='<div class="body"><div class="hist">';
+      var ns=allNotes(e.id).filter(function(n){return String(n.note||"").trim()!==""});
+      if(!ns.length) h+='<p class="stat">No notes yet.</p>';
+      ns.forEach(function(n){h+='<div class="note-item"><div class="meta">'+esc(n.author||"?")+" · "+fmt(n.timestamp)
+        +(n._pend?' · <span class="stat pend">pending</span>':"")+'</div><p>'+esc(n.note)+'</p></div>'});
+      var draft=LS.get("draft:"+e.id, myLatest(e.id));
+      h+='</div><textarea placeholder="Dictate or type…">'+esc(draft)+'</textarea>'
+        +'<div class="btns"><button class="save">Save note</button>'
+        +'<button class="donebtn'+(isDone(e.id)?" is":"")+'">'+(isDone(e.id)?"Done ✓":"Mark done")+'</button>'
+        +'<span class="stat" data-stat></span></div></div>';
+    }
+    h+='</div>';
+  });
+  if(!q) h+='<button class="addrow">+ Add exhibitor to Day '+day+'</button>';
+  $("#list").innerHTML=h;
+}
+var openId=null;
+
+/* ---------- events (delegated) ---------- */
+$("#list").addEventListener("click",function(ev){
+  var save=ev.target.closest(".save"), done=ev.target.closest(".donebtn"),
+      add=ev.target.closest(".addrow"), row=ev.target.closest(".row");
+  var card=ev.target.closest(".ex"); var id=card&&card.dataset.id;
+  if(save){ send(id,card,$("textarea",card).value,""); return; }
+  if(done){ send(id,card,$("textarea",card).value,isDone(id)?"no":"yes"); return; }
+  if(add){ var nm=prompt("Exhibitor name"); if(!nm)return;
+    var bo=prompt("Booth (e.g. H13 · D12)")||"—";
+    var ne={id:"new-"+Date.now(),day:day,num:"+",name:nm,booth:bo,tag:"E"};
+    EX.push(ne); LS.set("customEx",LS.get("customEx",[]).concat([ne])); openId=ne.id; render(); return; }
+  if(row){ openId = (openId===id? null : id); render();
+    if(openId){var el=document.querySelector('.ex[data-id="'+openId+'"]'); el&&el.scrollIntoView({block:"start",behavior:"smooth"});} }
+});
+$("#list").addEventListener("input",function(ev){
+  if(ev.target.tagName==="TEXTAREA"){var card=ev.target.closest(".ex");LS.set("draft:"+card.dataset.id,ev.target.value);}
+});
+
+/* ---------- save / queue / flush ---------- */
+function send(id,card,text,done){
+  var ex=EX.filter(function(e){return e.id===id})[0]||{};
+  var p={kind:"note",id:id,exhibitor:ex.name||"",author:who,note:text.trim(),done:done,_t:new Date().toISOString()};
+  queue.push({p:p}); LS.set("queue",queue); LS.set("draft:"+id,text);
+  var st=card&&$("[data-stat]",card); if(st){st.className="stat pend";st.textContent="Queued…";}
+  flush(); render();
+}
+var flushing=false;
+function flush(){
+  if(flushing||!queue.length) return;
+  if(!API_URL){netTxt("No API_URL configured — saves stay on this phone",true);return;}
+  if(!navigator.onLine){netTxt("Offline — "+queue.length+" note(s) queued",true);return;}
+  flushing=true;
+  var item=queue[0], p={}; Object.keys(item.p).forEach(function(k){if(k!=="_t")p[k]=item.p[k]});
+  fetch(API_URL,{method:"POST",mode:"no-cors",
+    headers:{"Content-Type":"application/x-www-form-urlencoded"},
+    body:new URLSearchParams(p).toString()})
+  .then(function(){ notes.push({timestamp:item.p._t,exhibitorid:item.p.id,exhibitor:item.p.exhibitor,
+      author:item.p.author,note:item.p.note,done:item.p.done});
+    queue.shift(); LS.set("queue",queue); flushing=false;
+    netTxt(queue.length? queue.length+" queued…" : "All notes saved",!!queue.length);
+    render(); flush(); })
+  .catch(function(){ flushing=false; netTxt("Save failed — will retry ("+queue.length+" queued)",true); });
+}
+function netTxt(t,warn){$("#netTxt").textContent=t;$("#net").classList.toggle("off",!!warn);}
+window.addEventListener("online",flush);
+setInterval(flush,20000);
+
+/* ---------- load ---------- */
+function load(){
+  if(!API_URL){netTxt("No API_URL configured — saves stay on this phone",true);return;}
+  netTxt("Loading notes…");
+  fetch(API_URL).then(function(r){return r.json()}).then(function(d){
+    notes=d.boothnotes||[];
+    var fmap={}; (d.exhibitors||[]).forEach(function(r){fmap[r.exhibitorid]=r;});
+    EX.forEach(function(e){var r=fmap[e.id]; if(r){ if(String(r.focus||"").trim()!=="") e.focus=r.focus;
+      if(String(r.name||"").trim()!=="") e.name=r.name; }});
+    // surface exhibitors added on the other phone
+    var known={}; EX.forEach(function(e){known[e.id]=1});
+    notes.forEach(function(n){ if(!known[n.exhibitorid]){known[n.exhibitorid]=1;
+      EX.push({id:n.exhibitorid,day:+((/^d(\d)/.exec(n.exhibitorid)||[])[1])||day,num:"+",name:n.exhibitor||"(added at fair)",booth:"—",tag:"E"});}});
+    netTxt(navigator.onLine?"Online — notes loaded":"Offline",!navigator.onLine); render(); flush();
+  }).catch(function(){netTxt("Could not reach the sheet — showing local notes only",true);render();});
+}
+
+/* ---------- tabs, search, who ---------- */
+document.querySelectorAll(".tabs button").forEach(function(b){
+  b.addEventListener("click",function(){day=+b.dataset.day;LS.set("day",day);openId=null;render();window.scrollTo(0,0);})});
+$("#q").addEventListener("input",render);
+var dlg=$("#whoDlg");
+function setWho(w){who=w;LS.set("who",w);$("#whoBtn").textContent=w;}
+$("#whoBtn").addEventListener("click",function(){dlg.showModal()});
+dlg.addEventListener("click",function(ev){var b=ev.target.closest(".opt");if(b){setWho(b.dataset.w);dlg.close();render();}});
+if(who){setWho(who);}else{dlg.showModal();}
+render(); load();
+})();
+</script>
+</body>
+</html>

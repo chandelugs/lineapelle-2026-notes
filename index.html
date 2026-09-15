@@ -179,12 +179,19 @@ function $(s,el){return (el||document).querySelector(s)}
 function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
 function fmt(t){var d=new Date(t);return isNaN(d)?"":d.toLocaleDateString(undefined,{day:"numeric",month:"short"})+" "+d.toLocaleTimeString(undefined,{hour:"2-digit",minute:"2-digit"})}
 function allNotes(id){return notes.concat(queue.map(function(q){q=q.p;return{timestamp:q._t,exhibitorid:q.id,author:q.author,note:q.note,done:q.done,_pend:1}}))
-  .filter(function(n){return n.exhibitorid===id}).sort(function(a,b){return new Date(b.timestamp)-new Date(a.timestamp)})}
+  .filter(function(n){return n.exhibitorid===id}).sort(function(a,b){return new Date(b.timestamp)-new Date(a.timestamp)})
+  .filter(function(n,i,arr){ for(var j=i+1;j<arr.length;j++){ var m=arr[j];
+      if(m.author===n.author && m.note===n.note && String(m.done||"")===String(n.done||"") &&
+         Math.abs(new Date(n.timestamp)-new Date(m.timestamp))<600000) return false; } return true; })}
 function hasNote(id){return allNotes(id).some(function(n){return String(n.note||"").trim()!==""})}
 function isDone(id){var l=allNotes(id).filter(function(n){return String(n.done||"")!==""})[0];return l&&/^(yes|true|1)$/i.test(l.done)}
 
 /* ---------- render ---------- */
+var pendingRender=false;
+function typing(){ var a=document.activeElement; return a && a.tagName==="TEXTAREA" && a.closest("#list"); }
 function render(){
+  if(typing()){ pendingRender=true; return; }        // never destroy the box someone is typing in
+  pendingRender=false;
   document.querySelectorAll(".tabs button").forEach(function(b){b.classList.toggle("on",+b.dataset.day===day)});
   var q=$("#q").value.trim().toLowerCase();
   var list=EX.filter(function(e){return q? (e.name+" "+e.booth).toLowerCase().indexOf(q)>=0 : e.day===day});
@@ -238,6 +245,9 @@ $("#list").addEventListener("click",function(ev){
   if(row){ var wasOpen=(openId===id); openId = (wasOpen? null : id); render();
     if(openId) scrollToCard(openId); }
 });
+$("#list").addEventListener("focusout",function(ev){
+  if(ev.target.tagName==="TEXTAREA"){ setTimeout(function(){ if(pendingRender && !typing()) render(); },250); }
+});
 $("#list").addEventListener("input",function(ev){
   if(ev.target.tagName==="TEXTAREA"){var card=ev.target.closest(".ex");LS.set("draft:"+card.dataset.id,ev.target.value);}
 });
@@ -247,7 +257,8 @@ function send(id,card,text,done){
   var ex=EX.filter(function(e){return e.id===id})[0]||{};
   var isStatus=(done!=="" && text.trim()==="");
   if(!isStatus && text.trim()==="") return;                 // nothing to save
-  var p={kind:"note",id:id,exhibitor:ex.name||"",author:who,note:text.trim(),done:done,_t:new Date().toISOString()};
+  var p={kind:"note",id:id,exhibitor:ex.name||"",author:who,note:text.trim(),done:done,
+         nid:Date.now().toString(36)+Math.random().toString(36).slice(2,8),_t:new Date().toISOString()};
   queue.push({p:p}); LS.set("queue",queue);
   if(!isStatus) LS.set("draft:"+id,"");                     // clear box after save; note lives in history
   var st=card&&$("[data-stat]",card); if(st){st.className="stat pend";st.textContent="Queued…";}
